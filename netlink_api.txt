@@ -1,0 +1,182 @@
+1, rtnetlink.h is from /usr/include/linux/rtnetlink.h, that is for reference only.
+
+2, rt_netlink.h is User-defined for this program only.
+
+3, rtmsg, rtm_table, rtm_protocol, rtm_type, rtm_scope, rtm_flags, rt_table, rtattr_type_t and rtnexthop
+
+	(1)rtmsg
+		struct rtmsg
+		{
+		    unsigned char       rtm_family;
+		    unsigned char       rtm_dst_len;
+		    unsigned char       rtm_src_len;
+		    unsigned char       rtm_tos;
+
+		    unsigned char       rtm_table;      /* Routing table id */
+		    unsigned char       rtm_protocol;   /* Routing protocol; see below  */
+		    unsigned char       rtm_scope;      /* See below */
+		    unsigned char       rtm_type;       /* See below    */
+
+		    unsigned            rtm_flags;
+		};
+
+	(2)rtm_table: main, local, ...
+
+	(3)rtm_protocol
+		#define RTPROT_UNSPEC   0	/* Field is invalid. */
+		#define RTPROT_REDIRECT 1   /* Route installed by ICMP redirects; not used by current IPv4 */
+		#define RTPROT_KERNEL   2   /* Route installed by kernel */
+		#define RTPROT_BOOT     3 	/* Route installed by user-space commands such as ip route and route (with the proto options) */
+		#define RTPROT_STATIC   4   /* Route installed by administrator. Not used. */
+
+		/* Values of protocol >= RTPROT_STATIC are not interpreted by kernel;
+		   they are just passed from user and back as is.
+		   It will be used by hypothetical multiple routing daemons.
+		   Note that protocol values should be standardized in order to
+		   avoid conflicts.
+		 */
+
+		#define RTPROT_GATED    8   /* Apparently, GateD */
+		#define RTPROT_RA       9   /* RDISC/ND router advertisements */
+		#define RTPROT_MRT      10  /* Merit MRT */
+		#define RTPROT_ZEBRA    11  /* Zebra */
+		#define RTPROT_BIRD     12  /* BIRD */
+		#define RTPROT_DNROUTED 13  /* DECnet routing daemon */
+		#define RTPROT_XORP     14  /* XORP */
+		#define RTPROT_NTK      15  /* Netsukuku */
+		#define RTPROT_DHCP     16  /* DHCP client */
+
+	(4)rtm_type
+		enum
+		{
+			/* Defines a noninitialized value. This value is used, for instance,
+			 * when removing an entry from the routing table,
+			 * because that operation does not require the type of entry to be specified.
+			 */
+		    RTN_UNSPEC,
+
+		    /* The route is a direct or indirect (via a gateway) route to a unicast address.
+		     * This is the default value set by the ip route command when no other type is specified by the user.
+		     */
+		    RTN_UNICAST,        /* Gateway or direct route  */
+
+		    /* The destination address is configured on a local interface. */
+		    RTN_LOCAL,          /* Accept locally */
+
+		    /* The destination address is a broadcast address.
+		     * Matching ingress packets are delivered locally as broadcasts,
+		     * and matching egress packets are sent as broadcasts.
+		     */
+		    RTN_BROADCAST,      /* Accept locally as broadcast, send as broadcast */
+
+		    /* Matching ingress packets are delivered locally as broadcasts,
+		     * and matching egress packets are sent as unicast. Not used by IPv4. */
+		    RTN_ANYCAST,        /* Accept locally as broadcast, but send as unicast */
+
+		    /* The destination address is a multicast address. */
+		    RTN_MULTICAST,      /* Multicast route */
+
+		    /* These values are associated with specific administrative configurations
+		     * rather than destination address types.
+		     */
+		    RTN_BLACKHOLE,      /* Drop */
+		    RTN_UNREACHABLE,    /* Destination is unreachable */
+		    RTN_PROHIBIT,       /* Administratively prohibited */
+		    RTN_THROW,          /* Not in this table */
+
+		    /* The source and/or destination IP address must be translated.
+		     * Not used because the associated feature,
+		     * FastNAT, has been dropped in the 2.6 kernels.
+		     */
+		    RTN_NAT,            /* Translate this address */
+
+		    /* An external resolver will take care of this route.
+		     * This functionality is currently not implemented.
+		     */
+		    RTN_XRESOLVE,       /* Use external resolver */
+		    __RTN_MAX
+		};
+
+	(5)rtm_scope
+
+		/* rtm_scope
+		   Really it is not scope, but sort of distance to the destination.
+		   NOWHERE are reserved for not existing destinations, HOST is our
+		   local addresses, LINK are destinations, located on directly attached
+		   link and UNIVERSE is everywhere in the Universe.
+
+		   Intermediate values are also possible f.e. interior routes
+		   could be assigned a value between UNIVERSE and LINK.
+		*/
+
+		enum rt_scope_t
+		{
+		    RT_SCOPE_UNIVERSE=0,
+			/* User defined values  */
+		    RT_SCOPE_SITE=200,
+		    RT_SCOPE_LINK=253,
+		    RT_SCOPE_HOST=254,
+		    RT_SCOPE_NOWHERE=255
+		};
+
+	(6)rtm_flags
+		#define RTM_F_NOTIFY		0x100	/* Notify user of route change	*/
+		#define RTM_F_CLONED		0x200	/* This route is cloned	*/
+		#define RTM_F_EQUALIZE		0x400	/* Multipath equalizer: NI */
+		#define RTM_F_PREFIX		0x800	/* Prefix addresses	*/
+
+	(7)rt_table
+		/* Reserved table identifiers */
+		enum rt_class_t
+		{
+			RT_TABLE_UNSPEC=0,
+		/* User defined values */
+			RT_TABLE_COMPAT=252,
+			RT_TABLE_DEFAULT=253,
+			RT_TABLE_MAIN=254,
+			RT_TABLE_LOCAL=255,
+			RT_TABLE_MAX=0xFFFFFFFF
+		};
+
+	(8)rtattr_type_t
+		enum rtattr_type_t
+		{
+			RTA_UNSPEC,
+			RTA_DST,
+			RTA_SRC,
+			RTA_IIF,
+			RTA_OIF,
+			RTA_GATEWAY,
+			RTA_PRIORITY,
+			RTA_PREFSRC,
+			RTA_METRICS,
+			RTA_MULTIPATH,
+			RTA_PROTOINFO, /* no longer used */
+			RTA_FLOW,
+			RTA_CACHEINFO,
+			RTA_SESSION, /* no longer used */
+			RTA_MP_ALGO, /* no longer used */
+			RTA_TABLE,
+			__RTA_MAX
+		};
+
+		#define RTA_MAX (__RTA_MAX - 1)
+
+	(9)rtnexthop
+		/* RTM_MULTIPATH --- array of struct rtnexthop.
+		 *
+		 * "struct rtnexthop" describes all necessary nexthop information,
+		 * i.e. parameters of path to a destination via this nexthop.
+		 *
+		 * At the moment it is impossible to set different prefsrc, mtu, window
+		 * and rtt for different paths from multipath.
+		 */
+
+		struct rtnexthop
+		{
+			unsigned short		rtnh_len;
+			unsigned char		rtnh_flags;
+			unsigned char		rtnh_hops;
+			int			rtnh_ifindex;
+		};
+
