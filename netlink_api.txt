@@ -179,4 +179,3 @@
 			unsigned char		rtnh_hops;
 			int			rtnh_ifindex;
 		};
-
